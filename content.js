@@ -60,77 +60,43 @@ function findActivePost() {
 }
 
 function extractCaption(post) {
-  const mainImage = [...post.querySelectorAll("img")]
-    .map((img) => ({
-      el: img,
-      width: img.naturalWidth || img.width || 0,
-      height: img.naturalHeight || img.height || 0,
-      src: img.src || ""
-    }))
-    .filter((img) => {
-      if (!img.src) return false;
-      if (img.width < 150 || img.height < 150) return false;
-      if (img.src.includes("profile_pic")) return false;
-      if (img.src.includes("s150x150")) return false;
-      return true;
-    })
-    .sort((a, b) => (b.width * b.height) - (a.width * a.height))[0]?.el;
-
+  const header = post.querySelector('header') || post.querySelector('div[style*="height: 60px"]');
+  
   const textCandidates = [];
+  // Target spans and h1s that are NOT inside the header
   const elements = post.querySelectorAll("h1, span");
 
   elements.forEach((el) => {
+    // SKIP if the element is inside the header
+    if (header && header.contains(el)) return;
+
     let text = el.innerText?.trim();
-    if (!text) return;
-    if (text.length < 8) return;
+    if (!text || text.length < 8) return;
 
     const lower = text.toLowerCase();
+    const blockedWords = ["follow", "following", "like", "reply", "comment", "share", "more", "view all"];
+    if (blockedWords.some(word => lower.includes(word))) return;
 
-    const blockedWords = [
-      "follow",
-      "following",
-      "like",
-      "likes",
-      "reply",
-      "replies",
-      "view all",
-      "see translation",
-      "add a comment",
-      "comment",
-      "share",
-      "more"
-    ];
+    // Filter out strings that look like single usernames (no spaces)
+    if (!text.includes(" ")) return;
 
-    if (blockedWords.includes(lower)) return;
-    if (/^[a-zA-Z0-9._]{1,30}$/.test(text)) return;
-    if (/^(@[a-zA-Z0-9._]+\s*)+$/.test(text)) return;
+    // Filter out common "Time ago" strings (e.g., "2 DAYS AGO")
+    if (/\d+\s+(DAYS|HOURS|MINUTES|AGO)/i.test(text)) return;
 
-    // keep only text that is BELOW the main image
-    if (mainImage) {
-      const imageBottom = mainImage.getBoundingClientRect().bottom;
-      const textTop = el.getBoundingClientRect().top;
-
-      if (textTop < imageBottom) return;
-    }
-
-    // remove leading username if present
+    // Remove the leading username that Instagram often prepends to captions
+    // This regex looks for a username-like string followed by a space
     text = text.replace(/^[a-zA-Z0-9._]{1,30}\s+/, "").trim();
 
-    if (text.length < 8) return;
-
-    const mentions = text.match(/@[a-zA-Z0-9._]+/g) || [];
-    const words = text.split(/\s+/).filter(Boolean);
-
-    if (words.length > 0 && mentions.length / words.length > 0.5) return;
-
-    textCandidates.push(text);
+    if (text.length > 10) {
+      textCandidates.push(text);
+    }
   });
 
+  // Sort by length - the real caption is almost always the longest block of text
   const uniqueCandidates = [...new Set(textCandidates)];
   uniqueCandidates.sort((a, b) => b.length - a.length);
 
-  console.log("Caption candidates below image:", uniqueCandidates);
-
+  console.log("Filtered Caption Candidates:", uniqueCandidates);
   return uniqueCandidates[0] || "";
 }
 
