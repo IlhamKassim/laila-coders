@@ -32,7 +32,11 @@ document.getElementById('scrapeBtn').addEventListener('click', async () => {
           }
           
           console.log("Background response:", bgResponse);
-          statusDiv.innerText = bgResponse?.status || "Done.";
+          if (bgResponse?.status === "Failed to send data to database" && bgResponse?.error) {
+            statusDiv.innerText = `Database error: ${bgResponse.error}`;
+          } else {
+            statusDiv.innerText = bgResponse?.status || "Done.";
+          }
 
           if (bgResponse?.status === "Data sent to database") {
             console.log("Updating streak...");
