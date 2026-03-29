@@ -14,7 +14,7 @@ Extension inserts jobs; **worker** computes a **`post_hash`** (normalized captio
 flowchart LR
   subgraph browser["Chrome — Instagram tab"]
     IG[(Instagram)]
-    CS[content.js\nscrape caption + image]
+    CS[content.js\nscrape caption and image]
     PU[popup.js\nSend to pipeline]
     BG[background.js\nPOST social_posts]
     IG --> CS
@@ -29,12 +29,12 @@ flowchart LR
   end
 
   subgraph backend["Your machine — worker.mjs"]
-    W[claim + hash]
-    G[Gemini +\nGoogle Search]
+    W[claim and hash]
+    G[Gemini with\nGoogle Search]
     W -->|lookup / upsert| CACHE
     W -->|miss| G
     G --> W
-    W <-->|jobs + result| DB
+    W <-->|jobs and result| DB
   end
 
   BG -->|anon REST\npending_keywords| DB
@@ -56,19 +56,19 @@ sequenceDiagram
   P->>B: POST_SCRAPED
   B->>S: INSERT social_posts (pending_keywords)
   S-->>B: row id
-  B-->>P: success + id
+  B-->>P: success and id
   W->>S: claim row → processing
   W->>S: SELECT post_analysis_cache by post_hash
   alt cache hit
     S-->>W: cached result
     W->>S: UPDATE completed, result, from_cache=true
   else cache miss
-    W->>G: analyze (text + image)
+    W->>G: analyze (text and image)
     G-->>W: NutritionLabel JSON
     W->>S: INSERT/UPDATE post_analysis_cache
     W->>S: UPDATE completed, result, from_cache=false
   end
-  Note over P,S: UI can poll social_posts by id; same post twice → hit count + cache reuse
+  Note over P,S: UI can poll social_posts by id; same post twice — hit count and cache reuse
 ```
 
 More detail: [`ai-track/docs/supabase/SUPABASE_BRIDGE.md`](ai-track/docs/supabase/SUPABASE_BRIDGE.md) · cache: [`ai-track/docs/phases/PHASE4_CACHE.md`](ai-track/docs/phases/PHASE4_CACHE.md).

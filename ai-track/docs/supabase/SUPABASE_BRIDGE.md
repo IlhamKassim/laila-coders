@@ -20,13 +20,13 @@ flowchart TB
   end
 
   subgraph google["Google"]
-    GM[Gemini + google_search]
+    GM[Gemini with google_search]
     IMG[image_url fetch]
   end
 
   CS --> BG
   BG -->|"anon key\npending_keywords"| PG
-  W -->|"claim + UPDATE result"| PG
+  W -->|"claim and UPDATE result"| PG
   W --> GM
   W --> IMG
 ```
@@ -41,14 +41,14 @@ sequenceDiagram
   participant W as worker_service_role
   participant G as Gemini
 
-  CS->>BG: scraped text + image + platform
+  CS->>BG: scraped text, image, platform
   BG->>DB: INSERT raw_text, image_url, platform, status=pending_keywords
   DB-->>BG: row id (return=representation)
   W->>DB: SELECT oldest pending_keywords, then UPDATE → processing
   DB-->>W: claimed row (if still pending)
   W->>G: analyzeNutritionPost(raw_text, image)
   G-->>W: merged JSON
-  W->>DB: UPDATE result, status=completed (or failed + error)
+  W->>DB: UPDATE result, status=completed (or failed with error)
   Note over BG,DB: Irfan can SELECT by id until status terminal, then read result
 ```
 
