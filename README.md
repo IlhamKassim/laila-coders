@@ -68,7 +68,7 @@ sequenceDiagram
     W->>S: INSERT/UPDATE post_analysis_cache
     W->>S: UPDATE completed, result, from_cache=false
   end
-  Note over P,S: UI can poll social_posts by id; same post twice — hit count and cache reuse
+  Note over P,S: UI can poll social_posts by id. Same post twice gives hit count and cache reuse
 ```
 
 More detail: [`ai-track/docs/supabase/SUPABASE_BRIDGE.md`](ai-track/docs/supabase/SUPABASE_BRIDGE.md) · cache: [`ai-track/docs/phases/PHASE4_CACHE.md`](ai-track/docs/phases/PHASE4_CACHE.md).
