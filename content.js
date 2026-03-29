@@ -135,9 +135,15 @@ function renderAnalysisOverlay(data) {
   if (oldOverlay) oldOverlay.remove();
 
   const confidencePercent = Math.round((data.confidence || 0) * 100);
+  const credibility = data.scores?.credibility || 0;
+  const visualIntegrity = data.scores?.visualIntegrity || 0;
+  const factualAlignment = data.scores?.factualAlignment || 0;
+
+  const isSuspicious = credibility < 50 || factualAlignment < 50;
 
   const overlay = document.createElement("div");
   overlay.id = "analysis-overlay";
+  overlay.className = isSuspicious ? "suspicious-overlay" : "safe-overlay";
 
   overlay.innerHTML = `
     <div class="header">
@@ -150,9 +156,9 @@ function renderAnalysisOverlay(data) {
       <div class="confidence-label">Confidence</div>
     </div>
 
-    ${createMetricBar("Credibility", data.scores?.credibility || 0)}
-    ${createMetricBar("Visual Integrity", data.scores?.visualIntegrity || 0)}
-    ${createMetricBar("Factual Alignment", data.scores?.factualAlignment || 0)}
+    ${createMetricBar("Credibility", credibility)}
+    ${createMetricBar("Visual Integrity", visualIntegrity)}
+    ${createMetricBar("Factual Alignment", factualAlignment)}
 
     <div class="summary">
       <div class="section-title">Summary</div>
@@ -178,6 +184,12 @@ function renderAnalysisOverlay(data) {
   overlay.querySelector(".close-btn").addEventListener("click", () => {
     overlay.remove();
   });
+
+  if (isSuspicious) {
+    triggerWarningFlash();
+  } else{
+    triggerConfetti();
+  }
 }
 
 function createMetricBar(label, value) {
@@ -194,6 +206,45 @@ function createMetricBar(label, value) {
   `;
 }
 
+function triggerConfetti() {
+  const oldContainer = document.getElementById("confetti-container");
+  if (oldContainer) oldContainer.remove();
+
+  const confettiContainer = document.createElement("div");
+  confettiContainer.id = "confetti-container";
+  document.body.appendChild(confettiContainer);
+
+  const colors = ["#60a5fa", "#818cf8", "#f472b6", "#fbbf24", "#34d399"];
+
+  for (let i = 0; i < 30; i++) {
+    const piece = document.createElement("div");
+    piece.className = "confetti-piece";
+    piece.style.left = `${Math.random() * 100}vw`;
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = `${Math.random() * 0.4}s`;
+    piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+    confettiContainer.appendChild(piece);
+  }
+
+  setTimeout(() => {
+    confettiContainer.remove();
+  }, 2500);
+}
+
+function triggerWarningFlash() {
+  const oldFlash = document.getElementById("warning-flash");
+  if (oldFlash) oldFlash.remove();
+
+  const flash = document.createElement("div");
+  flash.id = "warning-flash";
+  flash.className = "warning-flash";
+  document.body.appendChild(flash);
+
+  setTimeout(() => {
+    flash.remove();
+  }, 900);
+}
+
 (function injectStyles() {
   if (document.getElementById("overlay-styles")) return;
 
@@ -207,7 +258,7 @@ function createMetricBar(label, value) {
       width: 340px;
       max-height: 80vh;
       overflow-y: auto;
-      z-index: 999999;
+      z-index: 9999999;
       padding: 16px;
       border-radius: 18px;
       background: rgba(15, 23, 42, 0.82);
@@ -333,6 +384,69 @@ function createMetricBar(label, value) {
 
     .source-link:hover {
       text-decoration: underline;
+    }
+    
+    #analysis-overlay.safe-overlay {
+    box-shadow: 0 0 24px rgba(59, 130, 246, 0.35), 0 10px 40px rgba(0,0,0,0.35);
+    }
+
+    #analysis-overlay.suspicious-overlay {
+      border: 1px solid rgba(255, 80, 80, 0.45);
+      box-shadow: 0 0 28px rgba(255, 60, 60, 0.45), 0 10px 40px rgba(0,0,0,0.4);
+      animation: suspiciousPulse 1.2s infinite alternate;
+    }
+
+    @keyframes suspiciousPulse {
+      0% {
+        box-shadow: 0 0 12px rgba(255, 60, 60, 0.22), 0 10px 40px rgba(0,0,0,0.35);
+      }
+      100% {
+        box-shadow: 0 0 30px rgba(255, 60, 60, 0.65), 0 10px 40px rgba(0,0,0,0.4);
+      }
+    }
+
+    #confetti-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999999;
+      overflow: hidden;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      top: -20px;
+      width: 10px;
+      height: 16px;
+      border-radius: 3px;
+      opacity: 0.95;
+      animation: confettiFall 2s ease-in forwards;
+    }
+
+    @keyframes confettiFall {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(110vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    .warning-flash {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle, rgba(255,0,0,0.25), transparent);
+      pointer-events: none;
+      z-index: 999998;
+      animation: warningFlashAnim 0.9s ease-out forwards;
+    }
+
+    @keyframes warningFlashAnim {
+      0% { opacity: 0; }
+      20% { opacity: 1; }
+      100% { opacity: 0; }
     }
   `;
   document.head.appendChild(style);
