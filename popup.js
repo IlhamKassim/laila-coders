@@ -36,6 +36,32 @@ document.getElementById('scrapeBtn').addEventListener('click', async () => {
             statusDiv.innerText = `Database error: ${bgResponse.error}`;
           } else {
             statusDiv.innerText = bgResponse?.status || "Done.";
+
+            statusDiv.innerText = "Waiting for Gemini AI result...";
+            setTimeout(() => {
+              chrome.runtime.sendMessage({ type: "GET_LATEST_RESULT" }, (resultResponse) => {
+                if (chrome.runtime.lastError) {
+                  statusDiv.innerText = "Failed to fetch Gemini AI result.";
+                  console.error(chrome.runtime.lastError);
+                  return;
+                }
+
+                if (!resultResponse?.okay) {
+                  statusDiv.innerText = "No Gemini AI result fetched.";
+                  console.error(resultResponse?.error);
+                  return;
+                }
+
+                console.log("Fetched result row:", resultResponse.data);
+
+                chrome.tabs.sendMessage(tab.id, {
+                  action: "SHOW_ANALYSIS_OVERLAY",
+                  data: resultResponse.data.result
+                });
+
+                statusDiv.innerText = "Analysis shown on page!";
+              });
+            }, 10000);
           }
 
           if (bgResponse?.status === "Data sent to database") {

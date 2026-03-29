@@ -24,9 +24,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           error: msg,
         });
       });
-
-    return true; 
   }
+
+  if (request.type === "GET_LATEST_RESULT"){
+    getFromSupabase()
+      .then((data) => {
+        sendResponse({
+          okay: true, 
+          data
+        });
+      })
+      .catch((error) => {
+        sendResponse({
+          okay: false, 
+          error: error?.message || String(error)
+        });
+      });
+
+  }
+  return true;
 });
 
 // 3. The Simplified Pipeline
@@ -101,3 +117,46 @@ async function sendToSupabase(payload) {
     console.log("Supabase row id (poll this for result):", row?.id);
     return row;
 }
+
+async function getFromSupabase() {
+  const response = await fetch(
+    `${SUPABASE_URL}/rest/v1/social_posts?select=id,result,status,created_at&order=created_at.desc&limit=1`,
+    {
+      method: "GET",
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json"
+      }
+    }
+  );
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to fetch result: ${response.status} ${errorText}`);
+    }
+
+    const rows = await response.json();
+    if (!rows || rows.length === 0) {
+      throw new Error("No analysis rows found");
+    }
+
+    const row = rows[0];
+
+    let parsedResult = row.result;
+
+    // Parse the result to use it
+    if (typeof parsedResult === "string") {
+      try {
+        parsedResult = JSON.parse(parsedResult);
+      } catch (e) {
+        throw new Error("Result column is not valid JSON");
+      }
+    }
+
+    return {
+      id: row.id,
+      status: row.status,
+      result: parsedResult
+    };
+  }
