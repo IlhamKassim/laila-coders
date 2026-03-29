@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://laila-coders.local/schemas/analyze-request.schema.json",
+  "title": "AnalyzePostRequest",
+  "description": "Body for POST /analyze (Phase 3). The Chrome extension sends this JSON to your backend only — never to Gemini directly.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "postText"],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Bump when breaking the request contract."
+    },
+    "postText": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Visible caption / post text the user is checking."
+    },
+    "imageUrls": {
+      "type": "array",
+      "description": "Zero or more image URLs the server may fetch (Phase 3 will enforce HTTPS, count, and byte limits). Omit or use [] for text-only.",
+      "maxItems": 8,
+      "items": {
+        "type": "string",
+        "format": "uri",
+        "pattern": "^https://"
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Optional context for logging, cache keys (post_hash), or UI. Not required for analysis.",
+      "additionalProperties": true,
+      "properties": {
+        "platform": {
+          "type": "string",
+          "description": "e.g. instagram, x"
+        },
+        "postId": {
+          "type": "string",
+          "description": "Stable id from the host when available."
+        },
+        "permalink": {
+          "type": "string",
+          "format": "uri",
+          "description": "Canonical link to the post."
+        }
+      }
+    }
+  }
+}
