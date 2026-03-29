@@ -1,8 +1,6 @@
-// 1. Import the "envelope" file
-importScripts('config.js');
-
-const SUPABASE_URL = CONFIG.SUPABASE_URL;
-const SUPABASE_KEY = CONFIG.SUPABASE_KEY;
+// 1. Import the SUPABASE URL and KEY
+const SUPABASE_URL = "https://djrykjbedbuvvyxqnfpf.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Ae-YDP98g63ZReDV1S5PXA_SJGaebO8";
 
 // 2. Listen for the "Data Package" from content.js
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -10,24 +8,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log("Integrator: Received raw data from Instagram", request.data);
     
     // Pass the baton directly to Supabase
-    handleDataPipeline(request.data);
-    
-    sendResponse({ status: "Data sent to database" });
+    handleDataPipeline(request.data)
+      .then(() => {
+        sendResponse({ status: "Data sent to database" });
+      })
+      .catch((error) => {
+        console.error("Pipeline failed at the Supabase leg:", error);
+        sendResponse({ status: "Failed to send data to database" });
+      });
+
+    return true; 
   }
-  return true; 
 });
 
 // 3. The Simplified Pipeline
 async function handleDataPipeline(postData) {
-  try {
     // We no longer fetch truth sources here. 
     // We send the RAW data for Aqil to process with Gemini.
     await sendToSupabase(postData);
     console.log("Success: Raw data is now in Supabase for Aqil!");
-
-  } catch (error) {
-    console.error("Pipeline failed at the Supabase leg:", error);
-  }
 }
 
 // 4. The Pipe to Supabase
