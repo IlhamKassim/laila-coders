@@ -8,6 +8,8 @@ AI track (Path C) lives in [`ai-track/`](ai-track/) — **[documentation index](
 
 ## Extension pipeline
 
+Extension inserts jobs; **worker** computes a **`post_hash`** (normalized caption + image URL) and checks **`post_analysis_cache`**. **Cache hit** → reuse stored JSON, set **`from_cache`**, no Gemini call. **Miss** → Gemini, then **upsert** cache and complete the row.
+
 ```mermaid
 flowchart LR
   subgraph browser["Chrome — Instagram tab"]
@@ -23,13 +25,16 @@ flowchart LR
 
   subgraph cloud["Supabase"]
     DB[(social_posts)]
+    CACHE[(post_analysis_cache)]
   end
 
-  subgraph backend["Your machine / server"]
-    W[worker.mjs\nservice role]
+  subgraph backend["Your machine — worker.mjs"]
+    W[claim + hash]
     G[Gemini +\nGoogle Search]
-    W --> G
-    W <-->|claim → result| DB
+    W -->|lookup / upsert| CACHE
+    W -->|miss| G
+    G --> W
+    W <-->|jobs + result| DB
   end
 
   BG -->|anon REST\npending_keywords| DB
@@ -53,10 +58,17 @@ sequenceDiagram
   S-->>B: row id
   B-->>P: success + id
   W->>S: claim row → processing
-  W->>G: analyze (text + image)
-  G-->>W: NutritionLabel JSON
-  W->>S: UPDATE completed + result
-  Note over P,S: UI can poll by id for result when ready
+  W->>S: SELECT post_analysis_cache by post_hash
+  alt cache hit
+    S-->>W: cached result
+    W->>S: UPDATE completed, result, from_cache=true
+  else cache miss
+    W->>G: analyze (text + image)
+    G-->>W: NutritionLabel JSON
+    W->>S: INSERT/UPDATE post_analysis_cache
+    W->>S: UPDATE completed, result, from_cache=false
+  end
+  Note over P,S: UI can poll social_posts by id; same post twice → hit count + cache reuse
 ```
 
-More detail: [`ai-track/docs/supabase/SUPABASE_BRIDGE.md`](ai-track/docs/supabase/SUPABASE_BRIDGE.md).
+More detail: [`ai-track/docs/supabase/SUPABASE_BRIDGE.md`](ai-track/docs/supabase/SUPABASE_BRIDGE.md) · cache: [`ai-track/docs/phases/PHASE4_CACHE.md`](ai-track/docs/phases/PHASE4_CACHE.md).
