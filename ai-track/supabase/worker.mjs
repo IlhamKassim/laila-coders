@@ -8,9 +8,11 @@
  *   cd ai-track/supabase && npm install && node --env-file=.env worker.mjs
  *
  * Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GEMINI_API_KEY
+ * Optional: WORKER_CACHE_DISABLED=1 to skip post_analysis_cache (always call Gemini).
  */
 import { createClient } from "@supabase/supabase-js";
 import { formatGeminiUsageLine } from "../scripts/lib/gemini-nutrition-analyze.mjs";
+import { computePostHash } from "../scripts/lib/post-hash.mjs";
 import {
   runNutritionAnalyzePipeline,
   socialPostRowToAnalyzeInput,
@@ -20,6 +22,9 @@ const url = process.env.SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const geminiKey = process.env.GEMINI_API_KEY;
 const pollMs = Number(process.env.WORKER_POLL_IDLE_MS) || 1500;
+const cacheDisabled =
+  process.env.WORKER_CACHE_DISABLED === "1" ||
+  process.env.WORKER_CACHE_DISABLED === "true";
 /** Optional: only claim this UUID (table `id` is uuid, not an integer). */
 const onlyPostId = process.env.WORKER_POST_ID?.trim() || "";
 /** Optional ISO timestamp: only claim rows with created_at >= this (e.g. start-of-day test). */
@@ -95,6 +100,28 @@ async function claimNextSocialPostRest() {
   return { job: updated, error: null };
 }
 
+/** Insert or update cached result without resetting hit_count. */
+async function savePostAnalysisCache(postHash, result) {
+  const { data: existing } = await supabase
+    .from("post_analysis_cache")
+    .select("post_hash")
+    .eq("post_hash", postHash)
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await supabase
+      .from("post_analysis_cache")
+      .update({ result })
+      .eq("post_hash", postHash);
+    return { error };
+  }
+  const { error } = await supabase.from("post_analysis_cache").insert({
+    post_hash: postHash,
+    result,
+  });
+  return { error };
+}
+
 async function markFailed(jobId, message) {
   const { error } = await supabase
     .from("social_posts")
@@ -137,27 +164,74 @@ async function resetStaleProcessingRows() {
 
 async function processJob(job) {
   const { postText, imageUrls } = socialPostRowToAnalyzeInput(job);
+  const postHash = computePostHash({ postText, imageUrls });
   console.error(
     "[nutricheck-worker] Gemini input:",
     `caption ${postText.length} chars,`,
     imageUrls.length ? `image ${imageUrls[0].slice(0, 80)}…` : "no image URL",
+    `post_hash=${postHash.slice(0, 16)}…`,
   );
 
   let merged;
-  try {
-    const out = await runNutritionAnalyzePipeline({
-      apiKey: geminiKey,
-      postText,
-      imageUrls,
-    });
-    merged = out.merged;
-    console.log(formatGeminiUsageLine("[nutricheck-worker]", out.usage));
-  } catch (e) {
-    const msg = e.message || "Analyze pipeline failed";
-    console.error("[nutricheck-worker] pipeline error:", msg);
-    await markFailed(job.id, msg);
-    console.error("[nutricheck-worker] social_post", job.id, "→ failed");
-    return;
+  let fromCache = false;
+
+  if (!cacheDisabled) {
+    const { data: cached, error: cacheErr } = await supabase
+      .from("post_analysis_cache")
+      .select("result, hit_count")
+      .eq("post_hash", postHash)
+      .maybeSingle();
+
+    if (cacheErr) {
+      console.error("[nutricheck-worker] cache read error:", cacheErr.message);
+    } else if (cached?.result) {
+      merged = structuredClone(cached.result);
+      if (process.env.STRIP_GROUNDING_DEBUG === "1" && merged?.groundingDebug) {
+        delete merged.groundingDebug;
+      }
+      fromCache = true;
+      const nextHits = (cached.hit_count ?? 0) + 1;
+      await supabase
+        .from("post_analysis_cache")
+        .update({ hit_count: nextHits })
+        .eq("post_hash", postHash);
+      console.error(
+        "[nutricheck-worker] CACHE HIT — skipping Gemini",
+        `(hits=${nextHits})`,
+      );
+      console.log("[nutricheck-worker] tokens (cache hit — no Gemini call)");
+    }
+  } else {
+    console.error("[nutricheck-worker] cache disabled (WORKER_CACHE_DISABLED)");
+  }
+
+  if (!merged) {
+    try {
+      const out = await runNutritionAnalyzePipeline({
+        apiKey: geminiKey,
+        postText,
+        imageUrls,
+      });
+      merged = out.merged;
+      console.log(formatGeminiUsageLine("[nutricheck-worker]", out.usage));
+
+      const { error: cacheWriteErr } = await savePostAnalysisCache(
+        postHash,
+        merged,
+      );
+      if (cacheWriteErr) {
+        console.error(
+          "[nutricheck-worker] cache write error:",
+          cacheWriteErr.message,
+        );
+      }
+    } catch (e) {
+      const msg = e.message || "Analyze pipeline failed";
+      console.error("[nutricheck-worker] pipeline error:", msg);
+      await markFailed(job.id, msg);
+      console.error("[nutricheck-worker] social_post", job.id, "→ failed");
+      return;
+    }
   }
 
   const { error: doneErr } = await supabase
@@ -166,6 +240,7 @@ async function processJob(job) {
       status: "completed",
       result: merged,
       error: null,
+      from_cache: fromCache,
     })
     .eq("id", job.id);
 
@@ -193,6 +268,10 @@ if (onlyPostId) {
 if (minCreatedAt) {
   console.error("[nutricheck-worker] WORKER_MIN_CREATED_AT filter:", minCreatedAt);
 }
+console.error(
+  "[nutricheck-worker] post_analysis_cache:",
+  cacheDisabled ? "disabled" : "enabled (same post_hash → skip Gemini)",
+);
 
 await resetStaleProcessingRows();
 

@@ -15,6 +15,7 @@ All Markdown here describes the **NutriCheck** Gemini path under [`ai-track/`](.
 | 3 | [phases/PHASE3.md](phases/PHASE3.md) | HTTP `POST /analyze`, Supabase worker, shared pipeline, troubleshooting. |
 | 4 | [contracts/IRFAN_CONTRACT.md](contracts/IRFAN_CONTRACT.md) | Extension ↔ DB ↔ worker ownership; request/response shapes. |
 | 5 | [supabase/SUPABASE_BRIDGE.md](supabase/SUPABASE_BRIDGE.md) | `social_posts` flow, diagrams, worker runbook, security notes. |
+| 6 | [phases/PHASE4_CACHE.md](phases/PHASE4_CACHE.md) | `post_hash` dedupe, `post_analysis_cache`, `from_cache` flag. |
 
 ---
 
@@ -30,6 +31,7 @@ All Markdown here describes the **NutriCheck** Gemini path under [`ai-track/`](.
 
 ---
 
-## Phase 4 (not built yet)
+## Phase 4
 
-Outlined at the end of [phases/PHASE3.md](phases/PHASE3.md): `post_hash` cache before Gemini, auth/rate limits for public deploy.
+- **Cache:** [phases/PHASE4_CACHE.md](phases/PHASE4_CACHE.md) (implemented in worker + migration `20260330120000_post_analysis_cache.sql`).
+- **Still optional:** auth / rate limits for a public deploy — see the end of [phases/PHASE3.md](phases/PHASE3.md).

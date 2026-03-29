@@ -63,8 +63,9 @@ sequenceDiagram
 | `status` | Irfan → Worker | Irfan sets **`pending_keywords`**. Worker: **`processing`** → **`completed`** / **`failed`**. |
 | `result` | Worker | `NutritionLabelAnalysis` jsonb when completed. |
 | `error` | Worker | Text when failed. |
+| `from_cache` | Worker | `true` if `result` was copied from **`post_analysis_cache`** (same `post_hash`, no Gemini call). See [phases/PHASE4_CACHE.md](../phases/PHASE4_CACHE.md). |
 
-SQL: [`supabase/migrations/20260329150000_social_posts.sql`](../../supabase/migrations/20260329150000_social_posts.sql).
+SQL: [`supabase/migrations/20260329150000_social_posts.sql`](../../supabase/migrations/20260329150000_social_posts.sql) + cache migration [`20260330120000_post_analysis_cache.sql`](../../supabase/migrations/20260330120000_post_analysis_cache.sql).
 
 ## Worker
 

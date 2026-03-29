@@ -20,7 +20,8 @@ Use this file for **fast orientation** when editing or answering questions about
 | Full pipeline wrapper | `scripts/lib/run-nutrition-analyze-pipeline.mjs` | Phase 3 shared path |
 | CLI | `scripts/analyze-cli.mjs` | Args: `--text`, `--image`, `--image-url`, `--raw`, `--no-validate` |
 | HTTP server | `server/index.mjs` | `npm start` from `server/` |
-| Supabase worker | `supabase/worker.mjs` | `npm run worker` from `supabase/`; needs `supabase/.env` |
+| Supabase worker | `supabase/worker.mjs` | `npm run worker` from `supabase/`; optional **`post_analysis_cache`** via `post-hash.mjs` |
+| Post dedupe hash | `scripts/lib/post-hash.mjs` | `computePostHash` for cache keys; see `docs/phases/PHASE4_CACHE.md` |
 | System prompt (source of truth) | `prompts/nutrition-v1-system.md` | Keep in sync with analysis behavior docs |
 
 ---

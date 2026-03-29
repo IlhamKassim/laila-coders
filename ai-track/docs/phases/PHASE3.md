@@ -79,9 +79,9 @@ lsof -i :8787    # then kill that PID if it is yours
 
 **PostgREST “Could not find the `error` column … schema cache”** — Run [`supabase/sql/fix_postgrest_social_posts_columns.sql`](../../supabase/sql/fix_postgrest_social_posts_columns.sql) in the Supabase SQL Editor.
 
-## Next (Phase 4)
+## Next (Phase 4+)
 
-- Supabase cache by `post_hash` before calling Gemini.
-- Auth / rate limits for public deploy.
+- **Cache:** implemented — [PHASE4_CACHE.md](PHASE4_CACHE.md).
+- Auth / rate limits for public deploy (optional).
 
 - [Documentation index](../README.md)

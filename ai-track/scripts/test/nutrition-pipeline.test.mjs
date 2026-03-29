@@ -15,6 +15,11 @@ import {
 } from "../lib/merge-nutrition-payload.mjs";
 import { sourcesFromGrounding } from "../lib/sources-from-grounding.mjs";
 import { validateNutritionV1 } from "../lib/validate-nutrition.mjs";
+import {
+  computePostHash,
+  normalizeImageUrl,
+  normalizePostText,
+} from "../lib/post-hash.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const fx = (name) =>
@@ -98,5 +103,34 @@ describe("validateNutritionV1", () => {
     });
     assert.equal(ok, false);
     assert.ok(errors.length > 0);
+  });
+});
+
+describe("computePostHash", () => {
+  test("same input → same hash", () => {
+    const a = computePostHash({
+      postText: "Hello world",
+      imageUrls: ["https://example.com/a.jpg"],
+    });
+    const b = computePostHash({
+      postText: "Hello world",
+      imageUrls: ["https://example.com/a.jpg"],
+    });
+    assert.equal(a, b);
+  });
+  test("whitespace normalization", () => {
+    const a = computePostHash({ postText: "a  b", imageUrls: [] });
+    const b = computePostHash({ postText: "  a b  ", imageUrls: [] });
+    assert.equal(a, b);
+  });
+  test("strip CDN query on instagram host", () => {
+    const u1 =
+      "https://scontent.cdninstagram.com/v/t51.82787-15/x.jpg?ig_cache_key=abc";
+    const u2 =
+      "https://scontent.cdninstagram.com/v/t51.82787-15/x.jpg?ig_cache_key=xyz";
+    assert.equal(normalizeImageUrl(u1), normalizeImageUrl(u2));
+  });
+  test("normalizePostText", () => {
+    assert.equal(normalizePostText("  a \n b  "), "a b");
   });
 });

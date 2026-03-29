@@ -32,6 +32,8 @@ Example: [`examples/supabase-job-row.example.json`](../../examples/supabase-job-
 | `payload.platform` | `platform` |
 | (fixed) | `status` = `pending_keywords` on insert |
 
+**Worker-set columns (read-only for Irfan):** `result`, `error`, **`from_cache`** (`true` when the analysis was reused from `post_analysis_cache` — same normalized post, no second Gemini call). See [phases/PHASE4_CACHE.md](../phases/PHASE4_CACHE.md).
+
 **Older alternate table** `nutricheck_jobs` (`post_text`, `image_urls[]`) — see [`20260329120000_nutricheck_jobs.sql`](../../supabase/migrations/20260329120000_nutricheck_jobs.sql) — not used by current `background.js`.
 
 ---

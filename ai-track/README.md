@@ -14,8 +14,8 @@ Multimodal nutrition and authenticity analysis for social posts using **Gemini**
 | [`schemas/`](schemas/) & [`examples/`](examples/) | API contracts and sample JSON |
 | [`prompts/`](prompts/) | Live system instruction for NutriCheck |
 | [`server/`](server/) | Local HTTP API: `POST /analyze`, `GET /health` |
-| [`supabase/`](supabase/) | Migrations, SQL helpers, `worker.mjs` (polls `social_posts`) |
-| [`docs/`](docs/README.md) | Phases, Irfan contract, Supabase bridge diagrams |
+| [`supabase/`](supabase/) | Migrations, SQL helpers, `worker.mjs` (polls `social_posts`, optional **`post_analysis_cache`**) |
+| [`docs/`](docs/README.md) | Phases, Irfan contract, Supabase bridge, [**Phase 4 cache**](docs/phases/PHASE4_CACHE.md) |
 
 Unless a doc says otherwise, paths are relative to **`ai-track/`**.
 
