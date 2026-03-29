@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1.0.0",
+  "confidence": 0.92,
+  "summary": "Synthetic-looking flood scene with dog on helicopter; caption asks if AI.",
+  "scores": {
+    "credibility": 18,
+    "factualAlignment": 12,
+    "visualIntegrity": 14
+  },
+  "flags": ["synthetic_image", "physically_implausible"]
+}

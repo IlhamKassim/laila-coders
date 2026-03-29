@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0.0",
+  "postText": "is this AI?",
+  "imageUrls": [
+    "https://example.com/cdn/posts/sample-post-image.jpg"
+  ],
+  "metadata": {
+    "platform": "instagram",
+    "postId": "sample-post-id-123",
+    "permalink": "https://www.instagram.com/p/sample/"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "laila-nutricheck-server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node index.mjs"
+  }
+}

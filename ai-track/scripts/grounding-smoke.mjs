@@ -3,9 +3,10 @@
  * Phase 1 — Grounding smoke test (Google Search tool).
  * Docs: https://ai.google.dev/gemini-api/docs/google-search
  *
- * Usage:
- *   export GEMINI_API_KEY=...   # or use ai-track/.env with `set -a && source ../.env`
- *   node grounding-smoke.mjs
+ * Usage (from this directory):
+ *   export GEMINI_API_KEY=... && node grounding-smoke.mjs
+ * Or copy ../.env.example to ../.env, add the key, then (Node 20.6+):
+ *   node --env-file=../.env grounding-smoke.mjs
  *
  * Prints model text (truncated) and full groundingMetadata for inspection.
  */

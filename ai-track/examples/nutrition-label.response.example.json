@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0.0",
+  "confidence": 0.48,
+  "summary": "The post pairs a dramatic flood-rescue image with a short authenticity question. Visual cues (unusual composition, implausible details) suggest synthetic or manipulated media rather than a straightforward news photo. Web results referenced similar viral patterns; this remains an indicative assessment, not a forensic verdict.",
+  "scores": {
+    "credibility": 22,
+    "factualAlignment": 35,
+    "visualIntegrity": 18
+  },
+  "sources": [
+    {
+      "uri": "https://example.org/articles/sample-fact-check-flood-hoaxes",
+      "title": "example-fact-check"
+    },
+    {
+      "uri": "https://example.net/news/viral-imagery-guidance",
+      "title": "example-news-desk"
+    }
+  ],
+  "flags": [
+    "multimodal",
+    "weak_grounding",
+    "synthetic_image_suspected",
+    "physically_implausible"
+  ],
+  "groundingDebug": {
+    "webSearchQueries": [
+      "example query flood rescue viral debunk",
+      "example query AI generated disaster imagery"
+    ]
+  }
+}

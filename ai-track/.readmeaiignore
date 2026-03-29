@@ -1,0 +1,11 @@
+# ReadmeAI (https://github.com/eli64s/readme-ai) — paths to skip when scanning this folder
+
+node_modules/
+**/node_modules/
+.venv/
+.venv-readmeai/
+.env
+**/.env
+*.log
+.DS_Store
+supabase/node_modules/

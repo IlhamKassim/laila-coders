@@ -1,0 +1,12 @@
+{
+  "name": "laila-nutricheck-supabase",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "worker": "node worker.mjs",
+    "test-fetch": "node test-fetch.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1"
+  }
+}

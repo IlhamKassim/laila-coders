@@ -1,0 +1,25 @@
+{
+  "webSearchQueries": [
+    "dog helicopter flood AI debunk"
+  ],
+  "groundingChunks": [
+    {
+      "web": {
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/example-one",
+        "title": "fullfact.org"
+      }
+    },
+    {
+      "web": {
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/example-one",
+        "title": "fullfact.org"
+      }
+    },
+    {
+      "web": {
+        "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/example-two",
+        "title": "afp.com"
+      }
+    }
+  ]
+}

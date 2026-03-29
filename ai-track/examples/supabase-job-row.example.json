@@ -1,0 +1,13 @@
+{
+  "comment": "Matches extension background.js → POST /rest/v1/social_posts (Irfan). Worker reads status pending_keywords.",
+  "insert_body": {
+    "raw_text": "Caption text from Instagram scrape",
+    "image_url": "https://scontent.cdninstagram.com/...",
+    "platform": "instagram",
+    "status": "pending_keywords"
+  },
+  "after_worker": {
+    "status": "completed",
+    "result": "See nutrition-label.response.example.json shape (NutritionLabelAnalysis jsonb)"
+  }
+}

@@ -18,3 +18,4 @@
 ## References
 
 - [Grounding with Google Search (Gemini API)](https://ai.google.dev/gemini-api/docs/google-search)
+- [Documentation index](../README.md)
