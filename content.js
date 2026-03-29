@@ -60,67 +60,41 @@ function findActivePost() {
 }
 
 function extractCaption(post) {
-  const header = post.querySelector('header') || post.querySelector('div[style*="height: 60px"]');
-  
   const textCandidates = [];
-  // Target spans and h1s that are NOT inside the header
-  const elements = post.querySelectorAll("h1, span");
+  
+  // 1. Target elements with 'dir="auto"' - Instagram almost ALWAYS 
+  // uses this attribute for user-generated text like captions.
+  const elements = post.querySelectorAll('span[dir="auto"], h1[dir="auto"], div[dir="auto"]');
 
   elements.forEach((el) => {
-    // SKIP if the element is inside the header
-    if (header && header.contains(el)) return;
-
     let text = el.innerText?.trim();
-    if (!text || text.length < 8) return;
+    if (!text || text.length < 5) return;
 
-    const lower = text.toLowerCase();
-    const blockedWords = ["follow", "following", "like", "reply", "comment", "share", "more", "view all"];
-    if (blockedWords.some(word => lower.includes(word))) return;
+    // 2. The "Profile Name" Filter:
+    // Captions usually contain spaces, hashtags (#), or emojis.
+    // Usernames usually do not.
+    const hasSpace = text.includes(" ");
+    const hasSpecial = /[#\u{1F300}-\u{1F9FF}]/u.test(text); // Checks for hashtags or emojis
 
-    // Filter out strings that look like single usernames (no spaces)
-    if (!text.includes(" ")) return;
+    // 3. Exclude the Header (Username area)
+    const isInsideHeader = el.closest('header') || el.closest('div[role="menuitem"]');
+    if (isInsideHeader) return;
 
-    // Filter out common "Time ago" strings (e.g., "2 DAYS AGO")
-    if (/\d+\s+(DAYS|HOURS|MINUTES|AGO)/i.test(text)) return;
+    // 4. Score the text
+    let score = text.length;
+    if (hasSpace) score += 20; 
+    if (hasSpecial) score += 30;
 
-    // Remove the leading username that Instagram often prepends to captions
-    // This regex looks for a username-like string followed by a space
+    // 5. Clean leading usernames (IG often repeats the username at the start of a caption)
     text = text.replace(/^[a-zA-Z0-9._]{1,30}\s+/, "").trim();
 
-    if (text.length > 10) {
-      textCandidates.push(text);
-    }
+    textCandidates.push({ text, score });
   });
 
-  // Sort by length - the real caption is almost always the longest block of text
-  const uniqueCandidates = [...new Set(textCandidates)];
-  uniqueCandidates.sort((a, b) => b.length - a.length);
+  // Sort by score instead of just length
+  textCandidates.sort((a, b) => b.score - a.score);
 
-  console.log("Filtered Caption Candidates:", uniqueCandidates);
-  return uniqueCandidates[0] || "";
-}
+  console.log("Ranked Caption Candidates:", textCandidates);
 
-function extractImage(post) {
-  const images = [...post.querySelectorAll("img")];
-
-  const candidates = images
-    .map((img) => ({
-      src: img.src || "",
-      width: img.naturalWidth || img.width || 0,
-      height: img.naturalHeight || img.height || 0,
-      alt: img.alt || ""
-    }))
-    .filter((img) => {
-      if (!img.src) return false;
-      if (img.width < 150 || img.height < 150) return false;
-      if (img.src.includes("profile_pic")) return false;
-      if (img.src.includes("s150x150")) return false;
-      return true;
-    });
-
-  candidates.sort((a, b) => (b.width * b.height) - (a.width * a.height));
-
-  console.log("Image candidates:", candidates);
-
-  return candidates.length > 0 ? candidates[0].src : null;
+  return textCandidates.length > 0 ? textCandidates[0].text : "";
 }
