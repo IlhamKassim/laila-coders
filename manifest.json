@@ -4,7 +4,7 @@
     "version": "1.0.0",
     "description": "Analyze social media posts for credibility.",
     "permissions": [
-      "activeTab", 
+      "activeTab",
       "scripting"
     ],
     "host_permissions": [
@@ -24,4 +24,4 @@
         "js": ["content.js"]
       }
     ]
-  }
+}
