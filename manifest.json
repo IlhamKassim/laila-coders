@@ -5,7 +5,9 @@
     "description": "Analyze social media posts for credibility.",
     "permissions": [
       "activeTab",
-      "scripting"
+      "scripting",
+      "tabs",
+      "storage"
     ],
     "host_permissions": [
       "https://www.instagram.com/*",

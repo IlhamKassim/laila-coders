@@ -24,7 +24,7 @@ document.getElementById('scrapeBtn').addEventListener('click', async () => {
         statusDiv.innerText = "Data grabbed! Sending to Pipeline...";
           
         // 3. Send the scraped data to background.js for API calls
-        chrome.runtime.sendMessage({ type: "POST_SCRAPED", data: response }, (bgResponse) => {
+        chrome.runtime.sendMessage({ type: "POST_SCRAPED", data: response }, async (bgResponse) => {
           if (chrome.runtime.lastError) {
             statusDiv.innerText = "Database error.";
             console.error(chrome.runtime.lastError);
@@ -33,6 +33,13 @@ document.getElementById('scrapeBtn').addEventListener('click', async () => {
           
           console.log("Background response:", bgResponse);
           statusDiv.innerText = bgResponse?.status || "Done.";
+
+          if (bgResponse?.status === "Data sent to database") {
+            console.log("Updating streak...");
+            const streak = await updateDailyStreak();
+            console.log("New streak:", streak);
+            renderStreak(streak);
+          }
           }
         );
       });
@@ -40,4 +47,50 @@ document.getElementById('scrapeBtn').addEventListener('click', async () => {
       console.error("Popup error:", error);
       statusDiv.innerText = "Unexpected error.";
     }
+  });
+
+  async function updateDailyStreak() {
+    const today = new Date().toISOString().slice(0, 10);
+
+    const { streakCount = 0, lastUsedDate = "" } = await chrome.storage.local.get([
+      "streakCount",
+      "lastUsedDate"
+    ]);
+
+    if (lastUsedDate === today) {
+      return streakCount;
+    }
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().slice(0, 10);
+
+    let newStreak = 1;
+
+    if (lastUsedDate === yesterdayStr) {
+      newStreak = streakCount + 1;
+    }
+
+    await chrome.storage.local.set({
+      streakCount: newStreak,
+      lastUsedDate: today
+    });
+
+    return newStreak;
+  }
+
+  async function loadStreak() {
+    const { streakCount = 0 } = await chrome.storage.local.get("streakCount");
+    renderStreak(streakCount);
+  }
+
+  function renderStreak(streak) {
+    const streakText = document.getElementById("streakText");
+    if (!streakText) return;
+
+    streakText.innerText = `${streak} day${streak === 1 ? "" : "s"} streak`;
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadStreak();
   });
