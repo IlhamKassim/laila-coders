@@ -98,3 +98,28 @@ function extractCaption(post) {
 
   return textCandidates.length > 0 ? textCandidates[0].text : "";
 }
+
+function extractImage(post) {
+  const images = [...post.querySelectorAll("img")];
+
+  const candidates = images
+    .map((img) => ({
+      src: img.src || "",
+      width: img.naturalWidth || img.width || 0,
+      height: img.naturalHeight || img.height || 0,
+      alt: img.alt || ""
+    }))
+    .filter((img) => {
+      if (!img.src) return false;
+      if (img.width < 150 || img.height < 150) return false;
+      if (img.src.includes("profile_pic")) return false;
+      if (img.src.includes("s150x150")) return false;
+      return true;
+    });
+
+  candidates.sort((a, b) => (b.width * b.height) - (a.width * a.height));
+
+  console.log("Image candidates:", candidates);
+
+  return candidates.length > 0 ? candidates[0].src : null;
+}
