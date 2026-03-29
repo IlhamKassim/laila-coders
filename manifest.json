@@ -1,0 +1,27 @@
+{
+    "manifest_version": 3,
+    "name": "Social Nutrition Label",
+    "version": "1.0.0",
+    "description": "Analyze social media posts for credibility.",
+    "permissions": [
+      "activeTab", 
+      "scripting"
+    ],
+    "host_permissions": [
+      "https://www.instagram.com/*",
+      "https://newsapi.org/*",
+      "https://*.supabase.co/*"
+    ],
+    "action": {
+      "default_popup": "popup.html"
+    },
+    "background": {
+      "service_worker": "background.js"
+    },
+    "content_scripts": [
+      {
+        "matches": ["https://www.instagram.com/*"],
+        "js": ["content.js"]
+      }
+    ]
+  }

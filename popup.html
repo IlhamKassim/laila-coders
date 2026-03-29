@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Social Nutrition Label</title>
+  <style>
+    body {
+      width: 250px;
+      padding: 15px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+    }
+    h2 { color: #333; font-size: 1.2rem; }
+    button {
+      background-color: #0095f6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      width: 100%;
+    }
+    button:hover { background-color: #1877f2; }
+    #status { margin-top: 10px; font-size: 0.9rem; color: #666; }
+  </style>
+</head>
+<body>
+  <h2>🔍 Integrity Check</h2>
+  <p>Click below to analyze the post you are currently viewing.</p>
+  <button id="scrapeBtn">Analyze This Post</button>
+  <div id="status">Ready to scan...</div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
