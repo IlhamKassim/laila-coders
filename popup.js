@@ -61,7 +61,7 @@ document.getElementById('scrapeBtn').addEventListener('click', async () => {
 
                 statusDiv.innerText = "Analysis shown on page!";
               });
-            }, 10000);
+            }, 20000);
           }
 
           if (bgResponse?.status === "Data sent to database") {
