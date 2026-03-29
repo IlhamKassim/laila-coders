@@ -26,7 +26,7 @@ All Markdown here describes the **NutriCheck** Gemini path under [`ai-track/`](.
 | [`../prompts/nutrition-v1-system.md`](../prompts/nutrition-v1-system.md) | System instruction for NutriCheck (live prompt). |
 | [`../schemas/`](../schemas/) | JSON Schema + TypeScript types for API contracts. |
 | [`../examples/`](../examples/) | Example request/response JSON. |
-| [`../supabase/migrations/`](../supabase/migrations/) | SQL: `social_posts`, optional RPC, legacy `nutricheck_jobs`. |
+| [`../supabase/migrations/`](../supabase/migrations/) | SQL: `social_posts`, optional RPC, legacy `nutricheck_jobs`, ops views `nutricheck_ops_*` (`20260331120000_ops_dashboard_views.sql`, `20260331130000_ops_latency_tokens.sql`). |
 | [`../supabase/sql/fix_postgrest_social_posts_columns.sql`](../supabase/sql/fix_postgrest_social_posts_columns.sql) | Fix PostgREST “schema cache” missing `result` / `error`. |
 
 ---

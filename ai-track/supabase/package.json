@@ -3,8 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "worker": "node worker.mjs",
-    "test-fetch": "node test-fetch.mjs"
+    "worker": "node --env-file=.env worker.mjs",
+    "test-fetch": "node test-fetch.mjs",
+    "dashboard": "node --env-file=.env dashboard.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1"

@@ -63,6 +63,16 @@ npm install   # once
 npm run worker
 ```
 
+**5. Operational dashboard (hackathon)**
+
+After applying migration `20260331120000_ops_dashboard_views.sql` and reloading PostgREST, from `ai-track/supabase/`:
+
+```bash
+npm run dashboard
+```
+
+Open `http://127.0.0.1:8790/` (localhost only; uses the same service role as the worker). See [`docs/supabase/SUPABASE_BRIDGE.md`](docs/supabase/SUPABASE_BRIDGE.md).
+
 ---
 
 ## Documentation

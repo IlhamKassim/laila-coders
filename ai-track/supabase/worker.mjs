@@ -163,8 +163,13 @@ async function resetStaleProcessingRows() {
 }
 
 async function processJob(job) {
+  const startedAt = Date.now();
   const { postText, imageUrls } = socialPostRowToAnalyzeInput(job);
   const postHash = computePostHash({ postText, imageUrls });
+  const createdAtMs = Date.parse(job.created_at);
+  const queueLatencyMs = Number.isFinite(createdAtMs)
+    ? Math.max(0, Date.now() - createdAtMs)
+    : null;
   console.error(
     "[nutricheck-worker] Gemini input:",
     `caption ${postText.length} chars,`,
@@ -174,6 +179,7 @@ async function processJob(job) {
 
   let merged;
   let fromCache = false;
+  let usage = null;
 
   if (!cacheDisabled) {
     const { data: cached, error: cacheErr } = await supabase
@@ -213,6 +219,7 @@ async function processJob(job) {
         imageUrls,
       });
       merged = out.merged;
+      usage = out.usage ?? null;
       console.log(formatGeminiUsageLine("[nutricheck-worker]", out.usage));
 
       const { error: cacheWriteErr } = await savePostAnalysisCache(
@@ -241,6 +248,12 @@ async function processJob(job) {
       result: merged,
       error: null,
       from_cache: fromCache,
+      queue_latency_ms: queueLatencyMs,
+      processing_latency_ms: Math.max(0, Date.now() - startedAt),
+      token_prompt: usage?.prompt ?? 0,
+      token_output: usage?.output ?? 0,
+      token_thoughts: usage?.thoughts ?? 0,
+      token_total: usage?.total ?? 0,
     })
     .eq("id", job.id);
 

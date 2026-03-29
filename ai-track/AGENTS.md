@@ -21,6 +21,7 @@ Use this file for **fast orientation** when editing or answering questions about
 | CLI | `scripts/analyze-cli.mjs` | Args: `--text`, `--image`, `--image-url`, `--raw`, `--no-validate` |
 | HTTP server | `server/index.mjs` | `npm start` from `server/` |
 | Supabase worker | `supabase/worker.mjs` | `npm run worker` from `supabase/`; optional **`post_analysis_cache`** via `post-hash.mjs` |
+| Ops dashboard (local) | `supabase/dashboard.mjs` | `npm run dashboard` — `127.0.0.1` only; reads `nutricheck_ops_*` views |
 | Post dedupe hash | `scripts/lib/post-hash.mjs` | `computePostHash` for cache keys; see `docs/phases/PHASE4_CACHE.md` |
 | System prompt (source of truth) | `prompts/nutrition-v1-system.md` | Keep in sync with analysis behavior docs |
 

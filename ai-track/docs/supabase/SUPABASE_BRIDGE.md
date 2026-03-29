@@ -64,6 +64,9 @@ sequenceDiagram
 | `result` | Worker | `NutritionLabelAnalysis` jsonb when completed. |
 | `error` | Worker | Text when failed. |
 | `from_cache` | Worker | `true` if `result` was copied from **`post_analysis_cache`** (same `post_hash`, no Gemini call). See [phases/PHASE4_CACHE.md](../phases/PHASE4_CACHE.md). |
+| `queue_latency_ms` | Worker | Milliseconds from row creation to worker claim (ops metric). |
+| `processing_latency_ms` | Worker | Milliseconds spent processing after claim (ops metric). |
+| `token_total` | Worker | Gemini total tokens for that row (`0` for cache hit/no usage metadata). |
 
 SQL: [`supabase/migrations/20260329150000_social_posts.sql`](../../supabase/migrations/20260329150000_social_posts.sql) + cache migration [`20260330120000_post_analysis_cache.sql`](../../supabase/migrations/20260330120000_post_analysis_cache.sql).
 
@@ -75,6 +78,20 @@ cp .env.example .env
 npm install
 node --env-file=.env worker.mjs
 ```
+
+## Operational dashboard (local)
+
+SQL views (`nutricheck_ops_*`) aggregate queue status, completed cache vs fresh Gemini, `post_analysis_cache` totals, recent failures, and latency/token metrics — see migrations [`20260331120000_ops_dashboard_views.sql`](../../supabase/migrations/20260331120000_ops_dashboard_views.sql) and [`20260331130000_ops_latency_tokens.sql`](../../supabase/migrations/20260331130000_ops_latency_tokens.sql). Apply migrations, then reload PostgREST: `select pg_notify('pgrst', 'reload schema');`
+
+A tiny **localhost-only** server reads those views with the **service role** (same `.env` as the worker):
+
+```bash
+cd ai-track/supabase
+npm run dashboard
+# open http://127.0.0.1:8790/
+```
+
+Dashboard now includes **poll latency** (browser fetch to `/api/stats`) and DB-backed **Gemini token/latency** cards from worker-written columns.
 
 ## Security
 
