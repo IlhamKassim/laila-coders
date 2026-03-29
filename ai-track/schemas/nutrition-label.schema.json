@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://laila-coders.local/schemas/nutrition-label.schema.json",
+  "title": "NutritionLabelAnalysis",
+  "description": "NutriCheck / Nutrition Label payload for the extension (v1). Share this file with Irfan for UI binding.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "confidence",
+    "summary",
+    "scores",
+    "sources",
+    "flags"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Bump when breaking the contract."
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Overall confidence in the analysis. Lower when grounding is weak or absent."
+    },
+    "summary": {
+      "type": "string",
+      "description": "Short neutral summary of credibility / alignment / visual cues. No URLs in this field."
+    },
+    "scores": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["credibility", "factualAlignment", "visualIntegrity"],
+      "properties": {
+        "credibility": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "How trustworthy the post appears (0–100)."
+        },
+        "factualAlignment": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Alignment with verifiable claims / search-backed facts (0–100)."
+        },
+        "visualIntegrity": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Image/manipulation/context signals. Use 0 (or a neutral mid value agreed with UI) when no image was analyzed."
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "description": "Normalized web sources from Gemini groundingMetadata only. Rules: (1) Each item must map from groundingChunks[].web (uri/title). (2) Do not add URLs parsed from model text. (3) Dedupe by uri. (4) If grounding is missing or empty, return [].",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["uri"],
+        "properties": {
+          "uri": {
+            "type": "string",
+            "format": "uri",
+            "description": "Canonical URI from grounding chunk (may be redirect/wrapper URLs per API)."
+          },
+          "title": {
+            "type": "string",
+            "description": "Source title from grounding chunk when present."
+          }
+        }
+      }
+    },
+    "flags": {
+      "type": "array",
+      "description": "Machine-readable tags e.g. weak_grounding, multimodal, disputed_claim.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "groundingDebug": {
+      "type": "object",
+      "description": "Optional server-only or dev-only echo of webSearchQueries; omit in production extension responses if desired.",
+      "additionalProperties": true
+    }
+  }
+}
